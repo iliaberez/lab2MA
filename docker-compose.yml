@@ -1,0 +1,57 @@
+version: '3.0'
+services: 
+  account_service:
+    container_name: account_service 
+    build: ./image/php
+    volumes:
+      - ./placeholder/account_service:/var/www/placeholder
+    expose: 
+      - '80'
+    depends_on:
+      - 'mysql_account'
+  mysql_account:
+    container_name: mysql_account
+    image: mysql:5.7
+    restart: unless-stopped
+    volumes:
+      - ./mysql_account:/var/lib/mysql
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_USER=root
+    expose: 
+      - '3306'
+  shop_service:
+    container_name: shop_service
+    build: ./image/php
+    volumes: 
+      - ./placeholder/shop_service:/var/www/placeholder
+    expose: 
+      - '80'
+    depends_on: 
+      - 'mysql_shop'
+  mysql_shop:
+    container_name: mysql_shop
+    image: mysql:5.7
+    volumes:
+      - ./mysql_shop:/var/lib/mysql
+    environment: 
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_USER=root
+    expose: 
+      - '3306'
+  nginx:
+    container_name: gateway
+    restart: on-failure
+    image: nginx:latest
+    ports:
+      - '80:80'
+    volumes: 
+      - ./placeholder:var/www/placeholder
+      - ./logs/nginx:/var/log/nginx
+      - ./hosts:/etc/nginx/conf.d
+    depends_on: 
+      - 'account_service'
+      - 'shop_service'
+    
+
+    
